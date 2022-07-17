@@ -6,7 +6,6 @@ Connects to the FetchTV ecosystem allowing:
 - Sending commands to a Fetch Box
 - Recording free-to-air (FTA) programs
 - Listing and deleting recordings
-- Subscribing to events
 
 ## Using
 Add the repective version to your ```requirements.txt``` file
