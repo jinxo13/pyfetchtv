@@ -15,20 +15,32 @@ git+https://github.com/jinxo13/pyfetchtv@v0.2.14#egg=pyfetchtv
 
 ## Example Usage
 ```python
+import os
 import pprint
+import sys
 import time
 import logging
+from os.path import join, dirname
+
+from dotenv import load_dotenv
 
 from pyfetchtv.api.const.remote_keys import RemoteKey
 from pyfetchtv.api.fetchtv import FetchTV
 
-logger = logging.getLogger(__name__)
 pp = pprint.PrettyPrinter(indent=2)
+
+dotenv_path = join(dirname(__file__), '../.env')
+load_dotenv(dotenv_path)
+
+logger = logging.getLogger()
+logger.level = logging.DEBUG
+stream_handler = logging.StreamHandler(sys.stdout)
+logger.addHandler(stream_handler)
 
 if __name__ == "__main__":
 
     fetchtv = FetchTV(ping_sec=60)
-    if not fetchtv.login('<ACTIVATION_CODE>', '<PIN>'):
+    if not fetchtv.login(os.environ.get('ACTIVATION_CODE'), os.environ.get('PIN')):
         logger.error('Login to FetchTV failed, check activation code and pin are correct.')
         exit(1)
 
@@ -53,27 +65,28 @@ if __name__ == "__main__":
 
         # Turn on
         box = fetchtv.get_box(terminal_id)
-        print(f'\n--> Turning {box.label} on.')
-        box.send_key(RemoteKey.Power)
-        time.sleep(2)
-        pp.pprint(box.state.to_dict())
+        if box.state.play_state == 'IDLE':
+            print(f'\n--> Turning {box.label} on.')
+            box.send_key(RemoteKey.Power)
+            time.sleep(5)
+            pp.pprint(box.state.to_dict())
 
         # Pause
         print(f'\n--> Pause')
         box.send_key(RemoteKey.PlayPause)
-        time.sleep(2)
+        time.sleep(10)
         pp.pprint(box.state.to_dict())
 
         # Play
         print(f'\n--> Play')
         box.send_key(RemoteKey.PlayPause)
-        time.sleep(2)
+        time.sleep(10)
         pp.pprint(box.state.to_dict())
 
         # Stop (goes back to live TV)
         print(f'\n--> Stop')
         box.send_key(RemoteKey.Stop)
-        time.sleep(2)
+        time.sleep(10)
         pp.pprint(box.state.to_dict())
 
         # Retrieve current program
