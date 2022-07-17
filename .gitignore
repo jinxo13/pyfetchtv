@@ -11,3 +11,5 @@ build
 /.coverage
 /venv/
 /htmlcov/
+/.idea/
+/.scannerwork/
