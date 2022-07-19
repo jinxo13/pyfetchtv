@@ -57,5 +57,5 @@ class FetchTvBoxInterface(SetTopBox, ABC):
         pass
 
     @abstractmethod
-    def delete_recordings(self, recording_ids: List[str]):
+    def delete_recordings(self, recording_ids: List[int]):
         pass

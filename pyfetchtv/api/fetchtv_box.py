@@ -69,7 +69,7 @@ class FetchTvBox(FetchTvBoxInterface):
     def cancel_recording(self, program_id: str):
         self.__msg_handler.cancel_recording(self.terminal_id, program_id)
 
-    def delete_recordings(self, recording_ids: List[str]):
+    def delete_recordings(self, recording_ids: List[int]):
         self.__msg_handler.send_delete_recordings(self.terminal_id, recording_ids)
 
     def get_current_program(self) -> Optional[Program]:

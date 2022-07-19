@@ -1,20 +1,3 @@
- FetchTV python library
-Compatible with Python 3.7
-
-## Description
-Connects to the FetchTV ecosystem allowing:
-- Sending commands to a Fetch Box
-- Recording free-to-air (FTA) programs
-- Listing and deleting recordings
-
-## Using
-Add the repective version to your ```requirements.txt``` file
-```
-git+https://github.com/jinxo13/pyfetchtv@v0.2.15#egg=pyfetchtv
-```
-
-## Example Usage
-```python
 import os
 import pprint
 import time
@@ -131,4 +114,3 @@ if __name__ == "__main__":
 
     finally:
         fetchtv.close()
-```

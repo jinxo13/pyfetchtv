@@ -13,7 +13,6 @@ from pyfetchtv.api.fetchtv import FetchTV
 
 class TestFetchTV(unittest.TestCase):
     dotenv_path = join(dirname(__file__), '.env')
-    # Load file from the path.
     load_dotenv(dotenv_path)
 
     logger = logging.getLogger()
@@ -34,6 +33,8 @@ class TestFetchTV(unittest.TestCase):
             self.assertTrue(fetchtv.login(os.environ.get('ACTIVATION_CODE'), os.environ.get('PIN')))
             self.assertTrue(fetchtv.is_connected)
             time.sleep(10)
+
+            fetchtv.messages
 
             box_id = "971725107197290|0C:56:5C:6D:D2:6A"
             # fetchtv.send_key(box_id, RemoteKey.PlayPause)

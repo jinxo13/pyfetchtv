@@ -17,90 +17,90 @@ class Recording(JsonObject):
 
     @property
     def dlna_url(self) -> str:
-        return self.__dlna_url
+        return self.__dlna_url + str(self.id)
 
     @json_property(name='diskId')
-    def disk_id(self):
-        return ''
+    def disk_id(self) -> int:
+        return 0
 
     @json_property(name='id')
-    def id(self) -> str:
-        return ''
+    def id(self) -> int:
+        return 0
 
     @json_property(name='name')
     def name(self):
         return ''
 
     @json_property(name='channelId')
-    def channel_id(self):
+    def channel_id(self) -> str:
         return ''
 
     @json_property(name='programId')
-    def program_id(self):
-        return ''
+    def program_id(self) -> int:
+        return 0
 
     @json_property(name='description')
-    def description(self):
+    def description(self) -> str:
         return ''
 
     @json_property(name='episodeTitle')
-    def episode_title(self):
+    def episode_title(self) -> str:
         return ''
 
     @json_property(name='seriesNumber')
-    def season(self):
+    def season(self) -> str:
         return ''
 
     @json_property(name='episodeNumber')
-    def episode(self):
+    def episode(self) -> str:
         return ''
 
     @json_property(name='programStartDate')
-    def program_start(self):
+    def program_start(self) -> int:
         return 0
 
     @json_property(name='programEndDate')
-    def program_end(self):
+    def program_end(self) -> int:
         return 0
 
     @json_property(name='startDate')
-    def record_start(self):
+    def record_start(self) -> int:
         return 0
 
     @json_property(name='endDate')
-    def record_end(self):
+    def record_end(self) -> int:
         return 0
 
     @json_property(name='creationDate')
-    def created(self):
+    def created(self) -> int:
         return 0
 
     @json_property(name='seriesLinkId')
-    def series_id(self):
-        return 0
+    def series_id(self) -> str:
+        return ''
 
     @json_property(name='episodeId')
-    def episode_id(self):
+    def episode_id(self) -> int:
         return 0
 
     @json_property(name='currentPosition')
-    def current_position(self):
+    def current_position(self) -> int:
         return 0
 
     @json_property(name='viewCount')
-    def view_count(self):
+    def view_count(self) -> int:
         return 0
 
     @json_property(name='lastViewed')
-    def last_viewed(self):
+    def last_viewed(self) -> int:
         return 0
 
     @json_property(name='size')
-    def size(self):
+    def size(self) -> int:
         return 0
 
     @json_property(name='pendingDelete')
-    def pending_delete(self):
+    def pending_delete(self) -> bool:
         return False
 
     def delete(self):

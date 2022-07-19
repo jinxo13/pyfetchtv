@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Dict
 
 from pyfetchtv.api.json_objects.channel import Channel
@@ -39,6 +40,13 @@ class Storage(JsonObject):
         return 0
 
 
+class PlayState(Enum):
+    Paused = 'PAUSED'
+    Live = 'LIVE'
+    Playing = 'PLAYING'
+    Idle = 'IDLE'
+
+
 class State(JsonObject):
 
     @json_property(name='playbackType')
@@ -54,8 +62,14 @@ class State(JsonObject):
         return ''
 
     @json_property(name='playBackState')
-    def play_state(self):
+    def __play_state(self):
         return ''
+
+    @property
+    def play_state(self) -> PlayState:
+        if self.__play_state == 'UNPAUSED':
+            return PlayState.Playing
+        return PlayState(self.__play_state)
 
 
 class SetTopBox(JsonObject):

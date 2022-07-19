@@ -48,7 +48,7 @@ class FetchTvMessagesInterface(ABC):
         pass
 
     @abstractmethod
-    def send_delete_recordings(self, terminal_id: str, recording_ids: List[str]):
+    def send_delete_recordings(self, terminal_id: str, recording_ids: List[int]):
         pass
 
     @property

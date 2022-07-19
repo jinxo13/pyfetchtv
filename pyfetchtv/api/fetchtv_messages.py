@@ -8,7 +8,7 @@ from typing import List
 from pyfetchtv.api.const.message_types import MessageTypeOut, MessageTypeIn
 from pyfetchtv.api.const.remote_keys import RemoteKey
 from pyfetchtv.api.fetchtv_box_interface import FetchTvBoxInterface
-from pyfetchtv.api.fetchtv_interface import FetchTvInterface
+from pyfetchtv.api.fetchtv_interface import FetchTvInterface, SubscriberMessage
 from pyfetchtv.api.fetchtv_messages_interface import FetchTvMessagesInterface
 from pyfetchtv.api.helpers.ws_message_handler import WsMessageHandler
 from pyfetchtv.api.json_objects.recording import Recording
@@ -96,8 +96,8 @@ class FetchTvMessageHandler(WsMessageHandler, FetchTvMessagesInterface):
     def send_future_recordings(self, terminal_id: str):
         self._call_send_message(terminal_id, MessageTypeOut.FUTURE_RECORDINGS_LIST, requires_settopbox=True)
 
-    def send_delete_recordings(self, terminal_id: str, recording_ids: List[str]):
-        recording_ids = [int(rid) for rid in recording_ids]
+    def send_delete_recordings(self, terminal_id: str, recording_ids: List[int]):
+        recording_ids = [rid for rid in recording_ids]
         params = {
             'recordingIds': recording_ids,
             'startEventRequired': False,
@@ -205,6 +205,13 @@ class FetchTvMessageHandler(WsMessageHandler, FetchTvMessagesInterface):
             if len(self.__messages) > 10:
                 self.__messages.pop(0)
             self.__messages.append(subscribe_msg)
+
+        self.__fetchtv.publish_to_subscribers(SubscriberMessage(
+            time=int(subscribe_msg['time']),
+            message=subscribe_msg['message'],
+            msg_type=subscribe_msg['type'],
+            terminal_id=subscribe_msg['terminal_id']
+        ))
 
     def cancel_recording(self, terminal_id: str, program_id: str):
         params = {

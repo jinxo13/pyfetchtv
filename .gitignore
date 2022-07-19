@@ -2,8 +2,8 @@
 .env
 *.log
 __pycache__
-examples
 build
+json-examples
 /sonar-project.properties
 /run_sonar.cmd
 /run_coverage.bat

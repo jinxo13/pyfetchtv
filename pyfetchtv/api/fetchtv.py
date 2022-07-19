@@ -5,11 +5,11 @@ from datetime import datetime
 import requests
 import logging
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Callable
 
 from pyfetchtv.api.const.urls import URL_AUTHENTICATE, URL_MESSAGES, URL_EPG, URL_EPG_CHANNELS
 from pyfetchtv.api.fetchtv_box import FetchTvBox
-from pyfetchtv.api.fetchtv_interface import FetchTvInterface
+from pyfetchtv.api.fetchtv_interface import FetchTvInterface, SubscriberMessage
 from pyfetchtv.api.fetchtv_messages import FetchTvMessageHandler
 from pyfetchtv.api.json_objects.account import Account
 from pyfetchtv.api.json_objects.channel import Channel
@@ -29,6 +29,24 @@ logger = logging.getLogger(__name__)
 
 
 class FetchTV(FetchTvInterface):
+
+    def publish_to_subscribers(self, msg: SubscriberMessage):
+        thread = threading.Thread(target=self.__publish_runnable, args=(msg,))
+        thread.start()
+
+    def __publish_runnable(self, msg: SubscriberMessage):
+        for callback in self.__subscribers.values():
+            try:
+                callback(msg)
+            except:
+                logger.error('Callback to subscriber failed', exc_info=True)
+
+    def add_subscriber(self, subscriber_id: str, callback: Callable[[SubscriberMessage], None]):
+        self.__subscribers[subscriber_id] = callback
+
+    def remove_subscriber(self, subscriber_id: str):
+        if subscriber_id in self.__subscribers.keys():
+            del self.__subscribers[subscriber_id]
 
     @property
     def epg(self) -> Dict[str, List[Program]]:
@@ -122,6 +140,7 @@ class FetchTV(FetchTvInterface):
         self.__epg_thread.start()
         self.__epg_channels = {}
         self.__epg_regions = {}
+        self.__subscribers = {}
 
     def get_boxes(self):
         return self.__set_top_boxes
