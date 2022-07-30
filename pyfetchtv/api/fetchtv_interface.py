@@ -38,6 +38,15 @@ class SubscriberMessage:
     def terminal_id(self) -> str:
         return self.__terminal_id
 
+    def to_dict(self) -> dict:
+        return {
+            'time': self.__time,
+            'message': self.__message,
+            'group': self.__group.name,
+            'command': self.__command.name,
+            'terminal_id': self.__terminal_id
+        }
+
 
 class FetchTvInterface(ABC):
 
