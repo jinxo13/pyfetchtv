@@ -18,3 +18,11 @@ class Terminal(JsonObject):
     @json_property(name='pvr')
     def has_pvr(self):
         return False
+
+    @json_property(name='status')
+    def status(self):
+        return ''
+
+    @json_property(name='activation_status')
+    def activation_status(self):
+        return ''

@@ -53,7 +53,7 @@ class TestFetchTV(unittest.TestCase):
             box.record_program(box.state.channel_id, program.program_id, program.epg_program_id)
 
             time.sleep(10)
-            recording = [rec.id for rec in box.recordings.future if rec.program_id == program.program_id]
+            recording = [rec.id for rec in box.recordings.future.values() if rec.program_id == program.program_id]
 
             box.cancel_recording(program.program_id)
             box.delete_recordings(recording)

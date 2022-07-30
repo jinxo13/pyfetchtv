@@ -170,6 +170,12 @@ class FetchTV(FetchTvInterface):
             url=URL_MESSAGES,
             cookie="auth=" + self.__session.cookies.get('auth')
         )
+        for box in self.__account.terminals.values():
+            if box.status == 'ENABLED' and box.activation_status == 'ACTIVATED':
+                logger.info(f"FetchTV --> Querying box [{box.friendly_name}].")
+                self.__message_handler.send_is_alive(box.id)
+            else:
+                logger.info(f"FetchTV --> Skipping box [{box.friendly_name}] it's not enabled or not activated.")
         return True
 
     def set_box(self, terminal_id, box_json: dict):

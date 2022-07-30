@@ -41,10 +41,10 @@ class Storage(JsonObject):
 
 
 class PlayState(Enum):
-    Paused = 'PAUSED'
-    Live = 'LIVE'
-    Playing = 'PLAYING'
-    Idle = 'IDLE'
+    PAUSED = 'PAUSED'
+    LIVE = 'LIVE'
+    PLAYING = 'PLAYING'
+    IDLE = 'IDLE'
 
 
 class State(JsonObject):
@@ -68,7 +68,7 @@ class State(JsonObject):
     @property
     def play_state(self) -> PlayState:
         if self.__play_state == 'UNPAUSED':
-            return PlayState.Playing
+            return PlayState.PLAYING
         return PlayState(self.__play_state)
 
 

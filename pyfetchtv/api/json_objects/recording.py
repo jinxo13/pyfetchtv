@@ -113,25 +113,33 @@ class Recordings(JsonObject):
         super().__init__(json)
         self.__box = box
         self.__series = [Series(item) for item in self._get_json_value(json, 'seriesTagList', [])]
-        self.__future = []
+        self.__future = {}
+        self.__active = json['activeRecordings']
         self.set_future(json, 'currentFutureRecordings')
         self.__items = {itm['id']: Recording(self.__box, itm) for itm in self._get_json_value(json, 'recordings', [])}
 
     def set_future(self, json, tag):
-        self.__future = [Recording(self.__box, item) for item in self._get_json_value(json, tag, [])]
+        self.__future = {item['id']: Recording(self.__box, item) for item in self._get_json_value(json, tag, [])}
+
+    def set_active(self, recordings_ids: List[int]):
+        self.__active = recordings_ids
 
     @property
     def series(self) -> List[Series]:
         return self.__series
 
     @property
-    def future(self) -> List[Recording]:
+    def future(self) -> Dict[int, Recording]:
         return self.__future
+
+    @property
+    def active(self) -> List[int]:
+        return self.__active
 
     @property
     def items(self) -> Dict[int, Recording]:
         return self.__items
 
     @property
-    def pending_delete(self) -> int:
-        return len([item for item in self.__items.values() if item.pending_delete])
+    def pending_delete(self) -> List[Recording]:
+        return [item for item in self.__items.values() if item.pending_delete]

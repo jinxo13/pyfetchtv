@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 from typing import Dict, Optional, List, Callable
 
+from pyfetchtv.api.const.message_types import MessageType, MessageTypeIn
 from pyfetchtv.api.fetchtv_box_interface import FetchTvBoxInterface
 from pyfetchtv.api.json_objects.account import Account
 from pyfetchtv.api.json_objects.channel import Channel
@@ -10,18 +10,12 @@ from pyfetchtv.api.json_objects.epg_channel import EpgChannel
 from pyfetchtv.api.json_objects.epg_region import EpgRegion
 
 
-class MessageType(Enum):
-    Pause = 0
-    Play = 1
-    Stop = 2
-    Record = 3
-
-
 class SubscriberMessage:
-    def __init__(self, time: int, message: dict, msg_type: MessageType, terminal_id: str):
+    def __init__(self, time: int, message: dict, msg_group: MessageType, msg_command: MessageTypeIn, terminal_id: str):
         self.__time = time
         self.__message = message
-        self.__msg_type = msg_type
+        self.__group = msg_group
+        self.__command = msg_command
         self.__terminal_id = terminal_id
 
     @property
@@ -33,8 +27,12 @@ class SubscriberMessage:
         return self.__message
 
     @property
-    def msg_type(self) -> MessageType:
-        return self.__msg_type
+    def group(self) -> MessageType:
+        return self.__group
+
+    @property
+    def command(self) -> MessageTypeIn:
+        return self.__command
 
     @property
     def terminal_id(self) -> str:

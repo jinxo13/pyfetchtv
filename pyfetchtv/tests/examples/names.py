@@ -1,5 +1,6 @@
 import os
 import pprint
+import sys
 import time
 import logging
 from os.path import join, dirname
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 from pyfetchtv.api.const.remote_keys import RemoteKey
 from pyfetchtv.api.fetchtv import FetchTV
+from pyfetchtv.api.fetchtv_box_interface import RecordProgramParameters
 from pyfetchtv.api.fetchtv_interface import SubscriberMessage
 from pyfetchtv.api.json_objects.set_top_box import PlayState
 
@@ -25,7 +27,7 @@ logger = logging.getLogger()
 
 
 def callback(msg: SubscriberMessage):
-    print(f'MESSAGE: {msg.msg_type}')
+    print(f'Received Message: {msg.group} - {msg.command}')
     print('-->' + str(msg.message))
 
 
@@ -42,12 +44,13 @@ if __name__ == "__main__":
     try:
         # Wait for box
         for _ in range(10):
-            if fetchtv.get_boxes():
+            if len(fetchtv.get_boxes()) > 0:
                 break
             time.sleep(1)
 
-        if not fetchtv.get_boxes():
+        if len(fetchtv.get_boxes()) == 0:
             logger.error('No boxes found. Check your FetchTV box is on.')
+            exit(0)
 
         # Print box status
         terminal_id = ''
@@ -60,9 +63,10 @@ if __name__ == "__main__":
 
         # Turn on
         box = fetchtv.get_box(terminal_id)
-        if box.state.play_state == PlayState.Idle:
+        if box.state.play_state == PlayState.IDLE:
             print(f'\n--> Turning {box.label} on.')
             box.send_key(RemoteKey.Power)
+            time.sleep(CMD_DELAY)
 
         # Pause
         print(f'\n--> Pause')
@@ -90,25 +94,30 @@ if __name__ == "__main__":
 
         # Record current program
         print(f'\n--> Record current program')
-        box.record_program(box.state.channel_id, program.program_id, program.epg_program_id)
+        box.record_program(RecordProgramParameters(
+            channel_id=box.state.channel_id,
+            program_id=program.program_id,
+            epg_program_id=program.epg_program_id))
         time.sleep(CMD_DELAY)
 
         # List recordings for today
         print(f'\n--> Recordings...')
-        pp.pprint([rec.name for rec in box.recordings.future])
+        pp.pprint([rec.name for rec in box.recordings.future.values()])
 
         # Cancel recording
         print(f'\n--> Cancel recording')
-        recording_ids = [rec.id for rec in box.recordings.future if rec.program_id == program.program_id]
         box.cancel_recording(program.program_id)
         time.sleep(CMD_DELAY)
 
         # List stored recording
         print(f'\n--> Stored recording')
-        pp.pprint([rec.dlna_url for rec in box.recordings.items.values() if rec.program_id == program.program_id])
+        pp.pprint([rec.dlna_url for rec in box.recordings.items.values() if rec.program_id == program.program_id
+                   and not rec.pending_delete])
 
         # Delete recording
         print(f'\n--> Delete recording')
+        recording_ids = [rec.id for rec in box.recordings.items.values()
+                         if rec.program_id == program.program_id and not rec.pending_delete]
         box.delete_recordings(recording_ids)
         time.sleep(CMD_DELAY)
 

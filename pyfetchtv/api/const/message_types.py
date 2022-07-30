@@ -29,6 +29,16 @@ class MessageTypeOut(Enum):
 
 
 @unique
+class MessageType(Enum):
+    UNKNOWN = 0
+    STATE = 1
+    BOX = 2
+    FUTURE_RECORDINGS = 3
+    SERIES = 4
+    RECORDING = 5
+    RECORDINGS = 6
+
+@unique
 class MessageTypeIn(Enum):
     PONG = 1
     I_AM_ALIVE = 2
@@ -64,3 +74,12 @@ class MessageTypeIn(Enum):
     VOD_ACTIVATED = 32
     VOD_UNAVAILABLE = 33
     VOLUME_SET = 34
+
+    # Custom values for convenience
+    UNKNOWN = 0
+    BOX_FOUND = 50
+    PLAYING = 51
+    SERIES_CANCELLED = 52
+    SERIES_ADDED = 53
+    RECORDINGS_DELETE = 54
+    RECORD_PROGRAM_START = 55
