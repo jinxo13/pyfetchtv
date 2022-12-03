@@ -74,6 +74,8 @@ class MessageTypeIn(Enum):
     VOD_ACTIVATED = 32
     VOD_UNAVAILABLE = 33
     VOLUME_SET = 34
+    PLAYBACK_STOPPED = 35
+    ARE_YOU_ALIVE = 36
 
     # Custom values for convenience
     UNKNOWN = 0

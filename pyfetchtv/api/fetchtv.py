@@ -132,6 +132,9 @@ class FetchTV(FetchTvInterface):
         return self.__epg_regions
 
     def get_program(self, channel: Channel, for_time_msec: int) -> Optional[Program]:
+        if str(channel.epg_id) not in self.epg['channels']:
+            logger.error(f"Unable to find expected epg_channel [{channel.epg_id}] in {len(self.epg['channels'])} epg channels.")
+            return None
         epg = self.epg['channels'][str(channel.epg_id)]
         program_fields = self.__epg['__meta__']['program_fields']
         pos_start = program_fields.index('start')
@@ -205,6 +208,7 @@ class FetchTV(FetchTvInterface):
         logger.info("FetchTV --> login successful.")
         self.__account = Account(response)
         self.__connected = True
+        self.__update_epg()
         self.__epg_thread = threading.Thread(target=self.__update_epg_periodic)
         self.__epg_thread.start()
         self.__message_handler.connect(
