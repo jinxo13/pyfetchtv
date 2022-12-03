@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Optional, List
 
@@ -29,6 +30,9 @@ class FetchTvBox(FetchTvBoxInterface):
 
     def process_message(self, message: dict):
         msg_type = message['message']['type']
+
+        if msg_type not in [e.name for e in MessageTypeIn]:
+            logging.info(f'FetchTV --> Skipping processing message: {msg_type}')
 
         msg_command = MessageTypeIn[msg_type]
         if msg_command in [MessageTypeIn.NOW_PLAYING, MessageTypeIn.UNPAUSED]:

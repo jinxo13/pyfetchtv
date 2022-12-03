@@ -1,21 +1,24 @@
+from typing import Dict
+
 from pyfetchtv.api.json_objects.json_object import JsonObject
 
 
 class Program(JsonObject):
 
-    synopses = {}
-
-    @staticmethod
-    def _to_dict_ignored():
-        return ['synopses']
-
-    def __init__(self, json):
+    def __init__(self, json, synopses: Dict[str, str]):
         super().__init__(json)
         self.__values = json
+        self.__synopsis = synopses[str(self.synopsis_id)] if str(self.synopsis_id) in synopses else ''
+
+    def __hash__(self):
+        return hash(self.title + self.episode_title + self.series_no + self.episode_no)
+
+    def __eq__(self, other):
+        return isinstance(other, Program) and hash(other) == hash(self)
 
     @property
     def synopsis(self):
-        return self.synopses[str(self.synopsis_id)] if str(self.synopsis_id) in self.synopses else ''
+        return self.__synopsis
 
     @property
     def program_id(self) -> str:

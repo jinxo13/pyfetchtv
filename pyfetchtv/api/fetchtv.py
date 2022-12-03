@@ -1,6 +1,7 @@
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+from fuzzy_match import algorithims
 
 import requests
 import logging
@@ -49,10 +50,11 @@ class FetchTV(FetchTvInterface):
             del self.__subscribers[subscriber_id]
 
     @property
-    def epg(self) -> Dict[str, List[Program]]:
-        if not self.__epg:
-            self.__update_epg()
-        return self.__epg
+    def epg(self) -> dict:
+        with self.__epg_lock:
+            if not self.__epg:
+                self.__update_epg()
+            return self.__epg
 
     @property
     def messages(self):
@@ -65,44 +67,61 @@ class FetchTV(FetchTvInterface):
         self.close()
 
     def __update_epg_periodic(self):
-        for _ in range(60 * 60):  # every hour
-            if not self.__connected:
-                break
-            time.sleep(1)
-        if self.__connected:
+        while self.__connected:
             self.__update_epg()
+            for _ in range(60 * 60):  # wait for an hour
+                if not self.__connected:
+                    break
+                time.sleep(1)
 
     def __update_epg(self):
-        with self.__epg_lock:
-            self.__epg = self.get_epg()
-
-    def get_epg(self, for_date=None) -> Dict[str, List[Program]]:
         if not self.__epg_channels:
             response = self.__request('get epg channels', URL_EPG_CHANNELS, {})
             self.__epg_channels = {k: EpgChannel(v) for k, v in response['channels'].items()}
             self.__epg_regions = {k: EpgRegion(v, k) for k, v in response['region_details'].items()}
-        channel_ids = []
-        for_date = datetime.now() if not for_date else for_date
-        for box in self.get_boxes().values():
-            # Get EPG Ids for local channels
-            channel_ids.extend([str(v.epg_id) for v in box.dvb_channels.values()])
-        channel_ids = set(channel_ids)
-        params = {
-            "channel_ids": ','.join(channel_ids),
-            "block": f"4-{int(for_date.timestamp() / 14400)}",
-            "count": 10,
-            "extended": 1,
-            "off_air_catchup": 1,
-            "include_catchup": 1
-        }
-        response = self.__request('update epg', URL_EPG, params)
-        channels = response['channels']
-        Program.synopses = response['synopses']
 
-        result = {}
-        for k, v in channels.items():
-            result[k] = [Program(program) for program in v]
-        return result
+        with self.__epg_lock:
+            channel_ids = []
+            # Wait up to 10 seconds for box if not found yet
+            for _ in range(10):
+                if len(self.get_boxes()) > 0:
+                    break
+                time.sleep(1)
+            for box in self.get_boxes().values():
+                # Get EPG Ids for local channels
+                channel_ids.extend([str(v.epg_id) for v in box.dvb_channels.values()])
+            channel_ids = set(channel_ids)
+            for_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            params = {
+                "channel_ids": ','.join(channel_ids),
+                "block": f"4-{int(for_date.timestamp() / 14400)}",
+                "count": 42,
+                "extended": 1,
+                "off_air_catchup": 0,
+                "include_catchup": 0
+            }
+            response = self.__request('update epg', URL_EPG, params)
+            self.__epg = response
+
+    def get_epg(self, for_date=None) -> Dict[str, List[Program]]:
+        for_date = datetime.now() if not for_date else for_date
+        to_date = for_date + timedelta(days=2)
+        for_date = int(for_date.timestamp() * 1000)
+        to_date = int(to_date.timestamp() * 1000)
+        with self.__epg_lock:
+            channels = self.__epg['channels']
+            synopses = self.__epg['synopses']
+            program_fields = self.__epg['__meta__']['program_fields']
+            pos_start = program_fields.index('start')
+            pos_end = program_fields.index('end')
+            result = {}
+            for k, v in channels.items():
+                result[k] = []
+                for program in v:
+                    if program[pos_end] < for_date or program[pos_start] > to_date:
+                        continue
+                    result[k].append(Program(program, synopses))
+            return result
 
     @property
     def epg_channels(self) -> Dict[str, EpgChannel]:
@@ -113,11 +132,32 @@ class FetchTV(FetchTvInterface):
         return self.__epg_regions
 
     def get_program(self, channel: Channel, for_time_msec: int) -> Optional[Program]:
-        epg = self.epg[str(channel.epg_id)]
-        programs = [program for program in epg if program.start <= for_time_msec <= program.end]
+        epg = self.epg['channels'][str(channel.epg_id)]
+        program_fields = self.__epg['__meta__']['program_fields']
+        pos_start = program_fields.index('start')
+        pos_end = program_fields.index('end')
+        programs = [program for program in epg if program[pos_start] <= for_time_msec <= program[pos_end]]
         if len(programs) > 0:
-            return programs[0]
+            return Program(programs[0], self.epg['synopses'])
         return None
+
+    def find_program(self, name: str):
+        program_fields = self.__epg['__meta__']['program_fields']
+        pos_name = program_fields.index('title')
+        results = {}
+        synopses = self.__epg['synopses']
+        for k, v in self.__epg['channels'].items():
+            for program in v:
+                match = algorithims.trigram(program[pos_name], name)
+                if match > 0.3:
+                    program = Program(program, synopses)
+                    if hash(program) in results.keys():
+                        results[hash(program)]['epg_channels'].append(k)
+                    else:
+                        results[hash(program)] = {'match': match, 'program': program, 'epg_channels': [k]}
+        results = [val for val in results.values()]
+        results.sort(reverse=True, key=lambda x: x['match'])
+        return results
 
     @property
     def is_connected(self) -> bool:
@@ -129,6 +169,9 @@ class FetchTV(FetchTvInterface):
 
     def __init__(self, ping_sec=60):
         super().__init__()
+        self.__epg_channels = {}
+        self.__epg_regions = {}
+        self.__subscribers = {}
         self.__connected = False
         self.__session = requests.Session()
         self.__epg = {}
@@ -136,11 +179,7 @@ class FetchTV(FetchTvInterface):
         self.__set_top_boxes = {}  # type: Dict[str, SetTopBox]
         self.__message_handler = FetchTvMessageHandler('FetchTv', self, ping_sec)
         self.__epg_lock = threading.Lock()
-        self.__epg_thread = threading.Thread(target=self.__update_epg_periodic)
-        self.__epg_thread.start()
-        self.__epg_channels = {}
-        self.__epg_regions = {}
-        self.__subscribers = {}
+        self.__epg_thread = None
 
     def get_boxes(self):
         return self.__set_top_boxes
@@ -166,16 +205,14 @@ class FetchTV(FetchTvInterface):
         logger.info("FetchTV --> login successful.")
         self.__account = Account(response)
         self.__connected = True
+        self.__epg_thread = threading.Thread(target=self.__update_epg_periodic)
+        self.__epg_thread.start()
         self.__message_handler.connect(
             url=URL_MESSAGES,
             cookie="auth=" + self.__session.cookies.get('auth')
         )
         for box in self.__account.terminals.values():
-            if box.status == 'ENABLED' and box.activation_status == 'ACTIVATED':
-                logger.info(f"FetchTV --> Querying box [{box.friendly_name}].")
-                self.__message_handler.send_is_alive(box.id)
-            else:
-                logger.info(f"FetchTV --> Skipping box [{box.friendly_name}] it's not enabled or not activated.")
+            logger.info(f"FetchTV --> Found box [{box.friendly_name}], Status: [{box.status}:{box.activation_status}]")
         return True
 
     def set_box(self, terminal_id, box_json: dict):

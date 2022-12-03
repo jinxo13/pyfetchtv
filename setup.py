@@ -31,7 +31,9 @@ setup(
         'requests>=2.28.0',
         'jsonpath-ng>=1.5.3',
         'websocket-client>=1.3.2',
-        'python-dotenv>=0.20.0'
+        'python-dotenv>=0.20.0',
+        'fuzzy_match>=0.0.1',
+        'numpy>=1.21.1'
     ],
     include_package_data=True,
     classifiers=[

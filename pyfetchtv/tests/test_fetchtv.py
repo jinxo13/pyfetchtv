@@ -15,10 +15,15 @@ class TestFetchTV(unittest.TestCase):
     dotenv_path = join(dirname(__file__), '.env')
     load_dotenv(dotenv_path)
 
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
     logger = logging.getLogger()
-    logger.level = logging.DEBUG
-    stream_handler = logging.StreamHandler(sys.stdout)
-    logger.addHandler(stream_handler)
+    # logger.level = logging.DEBUG
+    # stream_handler = logging.StreamHandler(sys.stdout)
+    # logger.addHandler(stream_handler)
 
     def setUp(self) -> None:
         pass
@@ -34,8 +39,6 @@ class TestFetchTV(unittest.TestCase):
             self.assertTrue(fetchtv.is_connected)
             time.sleep(10)
 
-            fetchtv.messages
-
             box_id = "971725107197290|0C:56:5C:6D:D2:6A"
             # fetchtv.send_key(box_id, RemoteKey.PlayPause)
             # fetchtv.send_key(box_id, RemoteKey.PlayPause)
@@ -44,12 +47,18 @@ class TestFetchTV(unittest.TestCase):
             # fetchtv.play_channel(box_id, 30246952)
 
             box = fetchtv.get_box(box_id)
-            box.send_key(RemoteKey.Stop)
+            fetchtv.get_epg()
+            # box.send_key(RemoteKey.Stop)
             # print(box.to_dict())
 
             # box.update_media_state()
 
-            program = box.get_current_program()
+            # program = box.get_current_program()
+
+            programs = fetchtv.find_program('hunted')
+            programs = fetchtv.find_program('star trek')
+
+            """
             box.record_program(box.state.channel_id, program.program_id, program.epg_program_id)
 
             time.sleep(10)
@@ -57,7 +66,7 @@ class TestFetchTV(unittest.TestCase):
 
             box.cancel_recording(program.program_id)
             box.delete_recordings(recording)
-
+            """
             time.sleep(10)
 
         finally:
