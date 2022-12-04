@@ -144,18 +144,18 @@ class FetchTV(FetchTvInterface):
 
     def find_program(self, name: str):
         program_fields = self.__epg['__meta__']['program_fields']
-        pos_name = program_fields.index('title')
         results = {}
         synopses = self.__epg['synopses']
         for k, v in self.__epg['channels'].items():
             for program in v:
-                match = algorithims.trigram(program[pos_name], name)
-                if match > 0.3:
+                match1 = algorithims.trigram(program[program_fields.index('title')], name)
+                match2 = algorithims.trigram(program[program_fields.index('episode_title')], name)
+                if match1 > 0.2 or match2 > 0.2:
                     program = Program(program, synopses)
                     if hash(program) in results.keys():
                         results[hash(program)]['epg_channels'].append(k)
                     else:
-                        results[hash(program)] = {'match': match, 'program': program, 'epg_channels': [k]}
+                        results[hash(program)] = {'match': match1 if match1 > match2 else match2, 'program': program, 'epg_channels': [k]}
         results = [val for val in results.values()]
         results.sort(reverse=True, key=lambda x: x['match'])
         return results

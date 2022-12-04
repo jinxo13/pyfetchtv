@@ -101,9 +101,9 @@ class FetchTvBox(FetchTvBoxInterface):
                     self._recordings.future[recording.id] = recording
                     msg_command = MessageTypeIn.RECORD_PROGRAM_SUCCESS
 
-                if last_event_name in ['RECORD_PROGRAM_START', 'RECORD_PROGRAM_STOP']:
+                if last_event_name in ['RECORD_PROGRAM_START', 'RECORD_PROGRAM_STOP', 'RECORD_PROGRAM_CANCEL']:
                     msg_command = MessageTypeIn[last_event_name]
-                    if last_event_name == 'RECORD_PROGRAM_STOP':
+                    if last_event_name in ['RECORD_PROGRAM_STOP', 'RECORD_PROGRAM_CANCEL']:
                         # Remove from future
                         del self._recordings.future[recording.id]
 
