@@ -17,7 +17,7 @@ class Recording(JsonObject):
 
     @property
     def dlna_url(self) -> str:
-        return self.__dlna_url + str(self.id)
+        return self.__dlna_url + str(self.disk_id)
 
     @json_property(name='diskId')
     def disk_id(self) -> int:
