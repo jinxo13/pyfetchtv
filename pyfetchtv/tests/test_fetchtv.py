@@ -47,7 +47,8 @@ class TestFetchTV(unittest.TestCase):
             # fetchtv.play_channel(box_id, 30246952)
 
             box = fetchtv.get_box(box_id)
-            fetchtv.get_epg()
+            res = fetchtv.get_epg()
+            print(res)
             # box.send_key(RemoteKey.Stop)
             # print(box.to_dict())
 

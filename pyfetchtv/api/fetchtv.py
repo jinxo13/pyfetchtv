@@ -51,10 +51,7 @@ class FetchTV(FetchTvInterface):
 
     @property
     def epg(self) -> dict:
-        with self.__epg_lock:
-            if not self.__epg:
-                self.__update_epg()
-            return self.__epg
+        return self.__epg
 
     @property
     def messages(self):
@@ -82,11 +79,10 @@ class FetchTV(FetchTvInterface):
 
         with self.__epg_lock:
             channel_ids = []
-            # Wait up to 10 seconds for box if not found yet
-            for _ in range(10):
-                if len(self.get_boxes()) > 0:
-                    break
-                time.sleep(1)
+
+            if len(self.get_boxes()) == 0:
+                return
+
             for box in self.get_boxes().values():
                 # Get EPG Ids for local channels
                 channel_ids.extend([str(v.epg_id) for v in box.dvb_channels.values()])
