@@ -100,17 +100,19 @@ class FetchTV(FetchTvInterface):
             self.__epg = response
 
     def get_epg(self, for_date=None) -> Dict[str, List[Program]]:
+        result = {}
         for_date = datetime.now() if not for_date else for_date
         to_date = for_date + timedelta(days=2)
         for_date = int(for_date.timestamp() * 1000)
         to_date = int(to_date.timestamp() * 1000)
+        if 'channels' not in self.__epg:
+            return result
         with self.__epg_lock:
             channels = self.__epg['channels']
             synopses = self.__epg['synopses']
             program_fields = self.__epg['__meta__']['program_fields']
             pos_start = program_fields.index('start')
             pos_end = program_fields.index('end')
-            result = {}
             for k, v in channels.items():
                 result[k] = []
                 for program in v:
