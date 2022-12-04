@@ -208,7 +208,6 @@ class FetchTV(FetchTvInterface):
         logger.info("FetchTV --> login successful.")
         self.__account = Account(response)
         self.__connected = True
-        self.__update_epg()
         self.__epg_thread = threading.Thread(target=self.__update_epg_periodic)
         self.__epg_thread.start()
         self.__message_handler.connect(
@@ -221,6 +220,7 @@ class FetchTV(FetchTvInterface):
 
     def set_box(self, terminal_id, box_json: dict):
         self.__set_top_boxes[terminal_id] = FetchTvBox(self.__message_handler, box_json)
+        self.__update_epg()
 
     def __request(self, action: str, url: str, params: dict, data: dict = None):
         response = self.__session.post(
