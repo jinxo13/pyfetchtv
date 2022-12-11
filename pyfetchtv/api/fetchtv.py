@@ -154,8 +154,9 @@ class FetchTV(FetchTvInterface):
                     program = Program(program, synopses)
                     if hash(program) in results.keys():
                         results[hash(program)]['epg_channels'].append(k)
+                        results[hash(program)]['program_ids'].append(program.program_id)
                     else:
-                        results[hash(program)] = {'match': match1 if match1 > match2 else match2, 'program': program, 'epg_channels': [k]}
+                        results[hash(program)] = {'match': match1 if match1 > match2 else match2, 'program': program, 'program_ids': [program.program_id], 'epg_channels': [k]}
         results = [val for val in results.values()]
         results.sort(reverse=True, key=lambda x: x['match'])
         return results
