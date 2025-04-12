@@ -72,3 +72,16 @@ class TestFetchTV(unittest.TestCase):
 
         finally:
             fetchtv.close()
+
+    def test_epg(self):
+        fetchtv = FetchTV()
+        try:
+            fetchtv.login(os.environ.get('ACTIVATION_CODE'), os.environ.get('PIN'))
+            time.sleep(10)
+
+            res = fetchtv.get_epg()
+            print(res)
+            time.sleep(10)
+
+        finally:
+            fetchtv.close()
