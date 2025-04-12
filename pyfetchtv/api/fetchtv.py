@@ -23,6 +23,7 @@ STANDARD_HEADERS = {
     "Accept": "application/json",
     "X-FTV-Capabilities": "no_pin,android,v3.21.1.4988,tenplay_v2",
     "X-FTV-Timeout": "3",
+    "X-FTV-DeviceID": "xxxx",
     "Accept-Encoding": "gzip, deflate, br"
 }
 

@@ -26,7 +26,7 @@ The primary classes are:
 ## Installing
 Add the respective version to your ```requirements.txt``` file
 ```
-git+https://github.com/jinxo13/pyfetchtv@v0.3.0#egg=pyfetchtv
+git+https://github.com/jinxo13/pyfetchtv@v0.4.9#egg=pyfetchtv
 ```
 
 ## Example Usage
